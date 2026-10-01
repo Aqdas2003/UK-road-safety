@@ -1,0 +1,116 @@
+// =====================================================================
+// DAX_measures.dax
+// Copy each block into Power BI: Modeling > New measure (or New table).
+// Expected values (all years, no filters) are shown so you can check.
+// =====================================================================
+
+
+// ---------------------------------------------------------------------
+// 1. DATE TABLE  (Modeling > New table)
+// Power BI's time-intelligence functions need a proper calendar table
+// with one row per day and no gaps.
+// ---------------------------------------------------------------------
+Date =
+VAR FirstDay = DATE ( YEAR ( MIN ( collisions[collision_date] ) ), 1, 1 )
+VAR LastDay  = DATE ( YEAR ( MAX ( collisions[collision_date] ) ), 12, 31 )
+RETURN
+    ADDCOLUMNS (
+        CALENDAR ( FirstDay, LastDay ),
+        "Year",         YEAR ( [Date] ),
+        "Month Number", MONTH ( [Date] ),
+        "Month",        FORMAT ( [Date], "mmm" ),
+        "Year Month",   FORMAT ( [Date], "yyyy-mm" )
+    )
+
+
+// ---------------------------------------------------------------------
+// 2. CORE MEASURES  (Modeling > New measure)
+// Create an empty table called _Measures first to keep these tidy:
+// Home > Enter data > name it _Measures > Load.
+// ---------------------------------------------------------------------
+
+Collisions =
+COUNTROWS ( collisions )
+// expected: 513,801
+
+Casualties =
+COUNTROWS ( casualties )
+// expected: 652,821
+
+Killed =
+SUM ( casualties[is_fatal] )
+// expected: 8,033
+
+KSI (adjusted) =
+SUM ( casualties[ksi_adjusted] )
+// expected: 143,090   (2025 only: 29,918 = DfT's official figure)
+
+KSI % of Casualties =
+DIVIDE ( [KSI (adjusted)], [Casualties] )
+// format as percentage
+
+Fatal Collisions per 1,000 =
+DIVIDE ( SUM ( collisions[is_fatal] ), [Collisions] ) * 1000
+
+Deaths per 1,000 Casualties =
+DIVIDE ( [Killed], [Casualties] ) * 1000
+
+
+// ---------------------------------------------------------------------
+// 3. TIME INTELLIGENCE
+// ---------------------------------------------------------------------
+
+KSI Prior Year =
+CALCULATE ( [KSI (adjusted)], SAMEPERIODLASTYEAR ( 'Date'[Date] ) )
+
+KSI YoY % =
+DIVIDE ( [KSI (adjusted)] - [KSI Prior Year], [KSI Prior Year] )
+// 2025 selected: +3.6%
+
+// Average per year, so comparisons stay fair when several years are
+// selected (5 years of KSI vs a 1-year baseline would be meaningless).
+KSI per Year =
+DIVIDE ( [KSI (adjusted)], DISTINCTCOUNT ( 'Date'[Year] ) )
+
+
+// ---------------------------------------------------------------------
+// 4. ROAD SAFETY STRATEGY TARGETS (published January 2026)
+//    All KSI -65% by 2035; child KSI -70% by 2030; baseline = 2022-24 avg
+// ---------------------------------------------------------------------
+
+KSI Baseline 2022-24 =
+CALCULATE (
+    [KSI (adjusted)],
+    REMOVEFILTERS ( 'Date' ),                  // ignore the year slicer...
+    'Date'[Year] IN { 2022, 2023, 2024 }       // ...and use these years instead
+) / 3
+// expected: 28,925. Other slicers (e.g. authority) still apply.
+
+KSI 2035 Target =
+[KSI Baseline 2022-24] * 0.35
+// expected: 10,124
+
+KSI vs Baseline % =
+DIVIDE ( [KSI per Year] - [KSI Baseline 2022-24], [KSI Baseline 2022-24] )
+// 2025 selected: +3.4%
+
+Child KSI =
+CALCULATE ( [KSI (adjusted)], casualties[age_band_sort] IN { 0, 6, 11 } )   // ages 0-15
+// 2025 selected: 2,432 = DfT's official figure
+
+Child KSI Baseline 2022-24 =
+CALCULATE ( [Child KSI], REMOVEFILTERS ( 'Date' ), 'Date'[Year] IN { 2022, 2023, 2024 } ) / 3
+
+Child KSI 2030 Target =
+[Child KSI Baseline 2022-24] * 0.30
+
+
+// ---------------------------------------------------------------------
+// 5. SHARE MEASURES (for the "Who" page)
+// ---------------------------------------------------------------------
+
+Share of Casualties =
+DIVIDE ( [Casualties], CALCULATE ( [Casualties], REMOVEFILTERS ( casualties[road_user_group] ) ) )
+
+Share of Deaths =
+DIVIDE ( [Killed], CALCULATE ( [Killed], REMOVEFILTERS ( casualties[road_user_group] ) ) )

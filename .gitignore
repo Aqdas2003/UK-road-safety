@@ -1,0 +1,9 @@
+# Raw and exported data are large and fully reproducible
+data/
+powerbi/data/
+*.csv
+!results/*.csv
+# Power BI local cache
+*.pbix.bak
+.env
+__pycache__/

@@ -1,0 +1,19 @@
+{
+  "name": "Road Safety GB",
+  "dataColors": ["#2B6CB0", "#C53030", "#718096", "#DD6B20", "#2F855A", "#6B46C1", "#B7791F", "#319795"],
+  "background": "#FFFFFF",
+  "foreground": "#1A202C",
+  "tableAccent": "#2B6CB0",
+  "good": "#2F855A",
+  "neutral": "#B7791F",
+  "bad": "#C53030",
+  "maximum": "#C53030",
+  "center": "#F6E05E",
+  "minimum": "#EBF8FF",
+  "textClasses": {
+    "title":  { "fontFace": "Segoe UI Semibold", "fontSize": 14, "color": "#1A202C" },
+    "header": { "fontFace": "Segoe UI Semibold", "fontSize": 12, "color": "#1A202C" },
+    "label":  { "fontFace": "Segoe UI", "fontSize": 10, "color": "#4A5568" },
+    "callout":{ "fontFace": "Segoe UI Semibold", "fontSize": 28, "color": "#1A202C" }
+  }
+}
