@@ -24,12 +24,10 @@ The headline totals **match the Department for Transport's official statistics e
 
 A four-page Power BI dashboard (Overview, When, Where, Who), with slicers for year, nation and highway authority. The full dashboard is in [`powerbi/road_safety_dashboard.pdf`](powerbi/road_safety_dashboard.pdf).
 
-<!--
 ![Overview](powerbi/screenshots/overview.png)
 ![When](powerbi/screenshots/when.png)
 ![Where](powerbi/screenshots/where.png)
 ![Who](powerbi/screenshots/who.png)
--->
 
 ## Business questions
 
